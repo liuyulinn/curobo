@@ -24,7 +24,7 @@ FROM nvcr.io/nvidia/cudagl:${CUDA_VERSION}-devel-${BASE_DIST}
 
 LABEL maintainer "User Name"
 
-ARG VULKAN_SDK_VERSION=1.3.224.1
+ARG VULKAN_SDK_VERSION=1.3.243.0
 
 
 
@@ -242,6 +242,9 @@ RUN cd /pkgs/glog && \
     cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DWITH_GFLAGS=OFF -DWITH_GTEST=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_CXX_FLAGS=-D_GLIBCXX_USE_CXX11_ABI=${USE_CX11_ABI} \
     && make -j8 && make install
+
+RUN $omni_python -m ensurepip --upgrade && \
+    $omni_python -m pip install --upgrade pip setuptools wheel 
 
 RUN cd /pkgs && git clone https://github.com/nvlabs/nvblox_torch.git && \
     cd /pkgs/nvblox_torch && \
