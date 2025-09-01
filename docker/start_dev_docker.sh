@@ -88,7 +88,7 @@ elif [[ $input_arg == *isaac_sim* ]] ; then
         -v ~/docker/isaac-sim/data:/root/.local/share/ov/data:rw \
         -v ~/docker/isaac-sim/documents:/home/$USER/Documents:rw \
         --volume /dev:/dev \
-        --mount type=bind,src=/home/$USER/code,target=/home/$USER/code \
+        --mount type=bind,src=/home/$USER,target=/home/$USER \
         curobo_docker:user_$input_arg
 
 

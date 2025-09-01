@@ -24,7 +24,8 @@ FROM nvcr.io/nvidia/cudagl:${CUDA_VERSION}-devel-${BASE_DIST}
 
 LABEL maintainer "User Name"
 
-ARG VULKAN_SDK_VERSION=1.3.224.1
+# ARG VULKAN_SDK_VERSION=1.4.304.0
+ARG VULKAN_SDK_VERSION=1.3.243.0
 
 
 
@@ -44,35 +45,35 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 
 # Set timezone info
 RUN apt-get update && apt-get install -y \
-  tzdata \
-  software-properties-common \
-  && rm -rf /var/lib/apt/lists/* \
-  && ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime \
-  && echo "America/Los_Angeles" > /etc/timezone \
-  && dpkg-reconfigure -f noninteractive tzdata \
-  && add-apt-repository -y ppa:git-core/ppa \
-  && apt-get update && apt-get install -y \
-  curl \
-  lsb-core \
-  wget \
-  build-essential \
-  cmake \
-  git \
-  git-lfs \
-  iputils-ping \
-  make \
-  openssh-server \
-  openssh-client \
-  libeigen3-dev \
-  libssl-dev \
-  python3-pip \
-  python3-ipdb \
-  python3-tk \
-  python3-wstool \
-  sudo git bash unattended-upgrades \
-  apt-utils \
-  terminator \
-  && rm -rf /var/lib/apt/lists/*
+    tzdata \
+    software-properties-common \
+    && rm -rf /var/lib/apt/lists/* \
+    && ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime \
+    && echo "America/Los_Angeles" > /etc/timezone \
+    && dpkg-reconfigure -f noninteractive tzdata \
+    && add-apt-repository -y ppa:git-core/ppa \
+    && apt-get update && apt-get install -y \
+    curl \
+    lsb-core \
+    wget \
+    build-essential \
+    cmake \
+    git \
+    git-lfs \
+    iputils-ping \
+    make \
+    openssh-server \
+    openssh-client \
+    libeigen3-dev \
+    libssl-dev \
+    python3-pip \
+    python3-ipdb \
+    python3-tk \
+    python3-wstool \
+    sudo git bash unattended-upgrades \
+    apt-utils \
+    terminator \
+    && rm -rf /var/lib/apt/lists/*
 
 
 # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cudagl
@@ -92,14 +93,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl1.1 \
     wget \
     vulkan-utils \
-&& apt-get -y autoremove \
-&& apt-get clean autoclean \
-&& rm -rf /var/lib/apt/lists/*
+    && apt-get -y autoremove \
+    && apt-get clean autoclean \
+    && rm -rf /var/lib/apt/lists/*
 
 
 
 # Download the Vulkan SDK and extract the headers, loaders, layers and binary utilities
-RUN wget -q --show-progress \
+RUN echo ${VULKAN_SDK_VERSION} && wget -q --show-progress \
     --progress=bar:force:noscroll \
     https://sdk.lunarg.com/sdk/download/${VULKAN_SDK_VERSION}/linux/vulkansdk-linux-x86_64-${VULKAN_SDK_VERSION}.tar.gz \
     -O /tmp/vulkansdk-linux-x86_64-${VULKAN_SDK_VERSION}.tar.gz \
@@ -109,8 +110,10 @@ RUN wget -q --show-progress \
     && mkdir -p /usr/local/include/ && cp -ra /opt/vulkan/${VULKAN_SDK_VERSION}/x86_64/include/* /usr/local/include/ \
     && mkdir -p /usr/local/lib && cp -ra /opt/vulkan/${VULKAN_SDK_VERSION}/x86_64/lib/* /usr/local/lib/ \
     && cp -a /opt/vulkan/${VULKAN_SDK_VERSION}/x86_64/lib/libVkLayer_*.so /usr/local/lib \
-    && mkdir -p /usr/local/share/vulkan/explicit_layer.d \
-    && cp /opt/vulkan/${VULKAN_SDK_VERSION}/x86_64/etc/vulkan/explicit_layer.d/VkLayer_*.json /usr/local/share/vulkan/explicit_layer.d \
+    && mkdir -p /usr/local/share/vulkan/explicit_layer.d 
+# RUN ls /opt/vulkan/1.4.304.0/x86_64 && ls  /opt/vulkan/1.4.304.0/x86_64/etc/vulkan/explicit_layer.d/
+
+RUN cp /opt/vulkan/${VULKAN_SDK_VERSION}/x86_64/etc/vulkan/explicit_layer.d/VkLayer_*.json /usr/local/share/vulkan/explicit_layer.d \
     && mkdir -p /usr/local/share/vulkan/registry \
     && cp -a /opt/vulkan/${VULKAN_SDK_VERSION}/x86_64/share/vulkan/registry/* /usr/local/share/vulkan/registry \
     && cp -a /opt/vulkan/${VULKAN_SDK_VERSION}/x86_64/bin/* /usr/local/bin \
@@ -123,15 +126,15 @@ ENV NVIDIA_VISIBLE_DEVICES=all NVIDIA_DRIVER_CAPABILITIES=all
 
 # Open ports for live streaming
 EXPOSE 47995-48012/udp \
-       47995-48012/tcp \
-       49000-49007/udp \
-       49000-49007/tcp \
-       49100/tcp \
-       8011/tcp \
-       8012/tcp \
-       8211/tcp \
-       8899/tcp \
-       8891/tcp
+    47995-48012/tcp \
+    49000-49007/udp \
+    49000-49007/tcp \
+    49100/tcp \
+    8011/tcp \
+    8012/tcp \
+    8211/tcp \
+    8899/tcp \
+    8891/tcp
 
 ENV OMNI_SERVER http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/${ISAAC_SIM_VERSION}
 # ENV OMNI_SERVER omniverse://localhost/NVIDIA/Assets/Isaac/2022.1
@@ -242,6 +245,10 @@ RUN cd /pkgs/glog && \
     cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DWITH_GFLAGS=OFF -DWITH_GTEST=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_CXX_FLAGS=-D_GLIBCXX_USE_CXX11_ABI=${USE_CX11_ABI} \
     && make -j8 && make install
+
+# Fix pip in Isaac Sim
+RUN $omni_python -m ensurepip --upgrade && \
+    $omni_python -m pip install --upgrade pip setuptools wheel
 
 RUN cd /pkgs && git clone https://github.com/nvlabs/nvblox_torch.git && \
     cd /pkgs/nvblox_torch && \
