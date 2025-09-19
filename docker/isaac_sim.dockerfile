@@ -24,7 +24,6 @@ FROM nvcr.io/nvidia/cudagl:${CUDA_VERSION}-devel-${BASE_DIST}
 
 LABEL maintainer "User Name"
 
-# ARG VULKAN_SDK_VERSION=1.4.304.0
 ARG VULKAN_SDK_VERSION=1.3.243.0
 
 
@@ -246,9 +245,8 @@ RUN cd /pkgs/glog && \
     -DWITH_GFLAGS=OFF -DWITH_GTEST=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_CXX_FLAGS=-D_GLIBCXX_USE_CXX11_ABI=${USE_CX11_ABI} \
     && make -j8 && make install
 
-# Fix pip in Isaac Sim
 RUN $omni_python -m ensurepip --upgrade && \
-    $omni_python -m pip install --upgrade pip setuptools wheel
+    $omni_python -m pip install --upgrade pip setuptools wheel 
 
 RUN cd /pkgs && git clone https://github.com/nvlabs/nvblox_torch.git && \
     cd /pkgs/nvblox_torch && \

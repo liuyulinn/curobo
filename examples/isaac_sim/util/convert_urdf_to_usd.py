@@ -47,7 +47,8 @@ from omni.isaac.core.utils.types import ArticulationAction
 
 try:
     # Third Party
-    from omni.isaac.urdf import _urdf  # isaacsim 2022.2
+    from isaacsim.asset.importer.urdf import _urdf
+    # from omni.exporter.urdf import _urdf  # isaacsim 2022.2
 except ImportError:
     from omni.importer.urdf import _urdf  # isaac sim 2023.1
 
@@ -86,6 +87,8 @@ def save_usd():
     asset_path = join_path(
         get_assets_path(), robot_config["robot_cfg"]["kinematics"]["asset_root_path"]
     )
+
+    print(urdf_path, asset_path)
     urdf_interface = _urdf.acquire_urdf_interface()
     full_path = join_path(get_assets_path(), robot_config["robot_cfg"]["kinematics"]["urdf_path"])
     default_config = robot_config["robot_cfg"]["kinematics"]["cspace"]["retract_config"]

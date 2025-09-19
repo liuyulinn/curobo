@@ -57,7 +57,7 @@ elif [ "$input_arg" == "aarch64" ]; then
 elif [[ "$input_arg" == *isaac_sim* ]] ; then
 
 
-    docker run --name container_$input_arg --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
+    docker run --name container_$input_arg --entrypoint bash -it --gpus all --runtime=nvidia -e "ACCEPT_EULA=Y" --rm --network=host \
         --privileged \
         -e "PRIVACY_CONSENT=Y" \
         -v $HOME/.Xauthority:/root/.Xauthority \
@@ -70,6 +70,13 @@ elif [[ "$input_arg" == *isaac_sim* ]] ; then
         -v ~/docker/isaac-sim/logs:/root/.nvidia-omniverse/logs:rw \
         -v ~/docker/isaac-sim/data:/root/.local/share/ov/data:rw \
         -v ~/docker/isaac-sim/documents:/root/Documents:rw \
+        -v /home:/home:rw \
+        --env="NVIDIA_DRIVER_CAPABILITIES=all" \
+        --env="NVIDIA_VISIBLE_DEVICES=all" \
+        --env="DISPLAY=$DISPLAY" \
+        --env="XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR" \
+        --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+        --volume="$XDG_RUNTIME_DIR:$XDG_RUNTIME_DIR" \
         --volume /dev:/dev \
         curobo_docker:$input_arg
 
